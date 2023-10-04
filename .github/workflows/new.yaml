@@ -1,0 +1,22 @@
+name: Create Random Chinese From Unicode
+
+on: push
+
+jobs:
+  create-quote-file:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+
+      - name: Create Random Chinese
+        id: createchinese
+        uses: konjoinfinity/random-unicode-text-generator@v1.0.0
+        with:
+          numOfChars: "100"
+          startRange: "0x4e00"
+          endRange: "0x9fff"
+
+      - name: Show Output
+        run: |
+          echo "variable1 = ${{ steps.createchinese.outputs.output }}"
