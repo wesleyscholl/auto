@@ -1,0 +1,330 @@
+# name: Repo Actions with APIs
+
+# on: push
+
+# jobs:
+#   create-quote-file:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout repo
+#         uses: actions/checkout@v2
+
+#       - name: Fetch random quote from ZenQuotes API
+#         id: fetchq
+#         run: |
+#           sleep 5
+#           RESPONSE=$(curl -s "https://zenquotes.io/api/random")
+#           echo "::set-output name=quote::$(echo $RESPONSE | jq -r '.[0].q')"
+#           echo "::set-output name=author::$(echo $RESPONSE | jq -r '.[0].a' | tr ' ' '-' | sed "s/[^[:alpha:]-]//g")"
+          
+#       - name: Create and checkout new branch with authors name
+#         run: |
+#           sleep 5
+#           git checkout -b "${{ steps.fetchq.outputs.author }}"
+          
+#       - name: Create a new file with the quote
+#         run: |
+#           sleep 5
+#           echo "${{ steps.fetchq.outputs.quote }}" > "${{ steps.fetchq.outputs.author }}.md"
+      
+#       - name: Commit and push
+#         run: |
+#           sleep 5
+#           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+#           git config user.name "github-actions[bot]"
+#           git pull origin main
+#           git add -A
+#           git commit -m "Add quote from: ${{ steps.fetchq.outputs.author }}"
+#           git push origin "${{ steps.fetchq.outputs.author }}"
+ 
+#       - name: create pull request
+#         env:
+#           GH_TOKEN: ${{ secrets.KONJO_PAT }}
+#         run: |
+#           sleep 5
+#           gh pr create -B main -H "${{ steps.fetchq.outputs.author }}" --title 'Merge "${{ steps.fetchq.outputs.author }}"' --body '- [x] This PR adds a new quote from ${{ steps.fetchq.outputs.author }}.' --label "Review" --reviewer 'wesleyscholl'
+         
+#       - name: Fetch random quote from ZenQuotes API
+#         id: fetchquote
+#         run: |
+#           sleep 5
+#           RESPONSE=$(curl -s "https://zenquotes.io/api/random")
+#           echo "::set-output name=quote::$(echo $RESPONSE | jq -r '.[0].q')"
+#           echo "::set-output name=author::$(echo $RESPONSE | jq -r '.[0].a' | tr ' ' '-' | sed "s/[^[:alpha:]-]//g")"
+          
+#       - name: Create and checkout new branch with authors name
+#         run: |
+#           sleep 10
+#           git checkout -b "${{ steps.fetchquote.outputs.author }}"
+          
+#       - name: Create a new file with the quote
+#         run: |
+#           sleep 5
+#           echo "${{ steps.fetchquote.outputs.quote }}" > "${{ steps.fetchquote.outputs.author }}.md"
+      
+#       - name: Commit and push
+#         run: |
+#           sleep 5
+#           git config --local user.email "wscholl@totalwine.com"
+#           git config --local user.name "wesleyscholl"
+#           git pull origin main
+#           git add -A
+#           git commit -m "Add quote from: ${{ steps.fetchquote.outputs.author }}"
+#           git push origin "${{ steps.fetchquote.outputs.author }}"
+ 
+#       - name: create pull request
+#         run: |
+#           sleep 5
+#           gh pr create -B main -H "${{ steps.fetchquote.outputs.author }}" --title 'Merge "${{ steps.fetchquote.outputs.author }}"' --body '- [x] This PR adds a new quote from ${{ steps.fetchquote.outputs.author }}.' --label "Submit"
+#         env:
+#           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+
+#       - name: Get joke
+#         id: getjoke
+#         run: |
+#           sleep 5
+#           RESPONSE=$(curl -s "https://v2.jokeapi.dev/joke/Any?type=single")
+#           echo "::set-output name=joke::$(echo $RESPONSE | jq -r '.joke')"
+#           echo "::set-output name=category::$(echo $RESPONSE | jq -r '.category')"
+ 
+#       - name: Create an Issue
+#         id: createissue
+#         uses: dacbd/create-issue-action@main
+#         with:
+#           token: ${{ secrets.GH_TOKEN }}
+#           title: ${{ steps.getjoke.outputs.category }}
+#           body: |
+#             ### New Issue - `${{ steps.getjoke.outputs.category }}`
+#             Issue - `${{ steps.getjoke.outputs.joke }}`
+#             Category - `${{ steps.getjoke.outputs.category }}`
+#             Workflow name - `${{ github.workflow }}`
+#             Job - `${{ github.job }}`
+#             Status - `${{ job.status }}`
+            
+#       - name: Wait
+#         id: wait
+#         run: |
+#           sleep 30
+
+#       - name: Close Issue
+#         uses: peter-evans/close-issue@v3
+#         with:
+#           issue-number: ${{ steps.createissue.outputs.number }}
+#           comment: |
+#             - [x] Answer - ${{ steps.fetchquote.outputs.quote }}
+#             - [x] Author - ${{ steps.fetchquote.outputs.author }}
+#             ##
+#             Workflow name - ${{ github.workflow }}
+#             Job - ${{ github.job }}
+#             Status - ${{ job.status }}
+#             OS - ${{ runner.os }}
+#             Action - ${{ github.action }}
+#             Workspace - ${{ github.workspace }}
+#             Commit - ${{ github.sha }}
+#             Repo - ${{ github.repository }}
+#             Actor - ${{ github.actor }}
+
+#       - name: Get Poem
+#         id: getpoem
+#         run: |
+#           sleep 5
+#           RESPONSE=$(curl -s "https://poetrydb.org/random")
+#           echo "::set-output name=title::$(echo $RESPONSE | jq -r '.[].title')"
+#           echo "::set-output name=pauth::$(echo $RESPONSE | jq -r '.[].author')"
+#           echo "::set-output name=poem::$(echo $RESPONSE | jq -r 'flatten | .[].lines | join(" ")')"
+
+#       - name: Wait Again
+#         id: waitagain
+#         run: |
+#           sleep 5
+
+#       - name: Create a new GitHub Discussion
+#         id: create-discussion
+#         uses: abirismyname/create-discussion@v1.x
+#         env:
+#           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}      
+#         with:
+#           title: ${{ steps.getpoem.outputs.title }} - ${{ steps.getpoem.outputs.pauth }}
+#           body: ${{ steps.getpoem.outputs.poem }}
+#           repository-id: ${{ secrets.REPO_ID }}
+#           category-id: ${{ secrets.CAT_ID }}  
+          
+#       - name: Print discussion url and id
+#         run: |
+#           sleep 5
+#           echo discussion-id: ${{steps.create-discussion.outputs.discussion-id}} 
+#           echo discussion-url: ${{steps.create-discussion.outputs.discussion-url}} 
+
+#       - name: Fetch Advice
+#         id: fetchadvice
+#         run: |
+#           sleep 15
+#           RESPONSE=$(curl -s "https://api.adviceslip.com/advice")
+#           echo "::set-output name=advice::$(echo $RESPONSE | jq -r '.slip.advice')"
+#           echo "::set-output name=id::$(echo $RESPONSE | jq -r '.slip.id')"
+
+#       - name: Add Discussion Comment
+#         id: discusscomment
+#         env:
+#           GRAPHQL_ENDPOINT: https://api.github.com/graphql
+#         run: |
+#           sleep 5
+#           RESPONSE=$(curl -X POST -H "Authorization: bearer ${{ secrets.GITHUB_TOKEN }}" -H "Content-Type: application/json" -d '{"query": "mutation { addDiscussionComment(input: {body: \"${{steps.fetchadvice.outputs.advice}} - ${{steps.fetchadvice.outputs.id}}\" discussionId: \"${{steps.create-discussion.outputs.discussion-id}}\" clientMutationId: \"8888\"}) { clientMutationId comment { id body } } }"}' ${GRAPHQL_ENDPOINT}) 
+#           echo "::set-output name=commentid::$(echo $RESPONSE | jq -r '.data.addDiscussionComment.comment.id')"
+
+#       - name: Mark Comment as Answer
+#         id: answercomment
+#         env:
+#           GRAPHQL_ENDPOINT: https://api.github.com/graphql
+#         run: |
+#           sleep 15
+#           curl -X POST -H "Authorization: bearer ${{ secrets.GITHUB_TOKEN }}" -H "Content-Type: application/json" -d '{"query": "mutation { markDiscussionCommentAsAnswer(input: {id: \"${{steps.discusscomment.outputs.commentid}}\", clientMutationId: \"8888\"}) { clientMutationId discussion { id } } }"}' ${GRAPHQL_ENDPOINT} 
+
+
+# name: Automatic pull request review
+# on: 
+#   pull_request:
+#     types: [ labeled ]
+    
+# jobs:
+#   automate-pullrequest-submit:
+#     runs-on: ubuntu-latest
+#     if: ${{ github.event.label.name == 'Submit' }}
+#     steps:
+    
+#       - name: Get Data
+#         id: getdata
+#         run: |
+#           sleep 5
+#           RESPONSE=$(curl -s "https://ciprand.p3p.repl.co/api?len=150&count=1")
+#           echo "::set-output name=data::$(echo $RESPONSE | jq -r '.Strings[0]')"
+          
+#       - name: Comment PR
+#         uses: thollander/actions-comment-pull-request@v2
+#         with:
+#           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+#           message: |
+#             ${{ steps.getdata.outputs.data }}
+#           reactions: eyes, rocket, +1, heart
+          
+#       - name: Get Inspiration
+#         id: getinspiration
+#         run: |
+#           sleep 5
+#           RESPONSE=$(curl -s "https://api.fisenko.net/v1/quotes/en/random")
+#           echo "::set-output name=text::$(echo $RESPONSE | jq -r '.text')"
+#           echo "::set-output name=author::$(echo $RESPONSE | jq -r '.author.name')"
+          
+#       - name: Wait
+#         id: wait
+#         run: |
+#           sleep 5
+          
+#       - name: Approve pull request
+#         if: github.actor == 'wesleyscholl'
+#         uses: andrewmusgrave/automatic-pull-request-review@0.0.5
+#         with:
+#           repo-token: ${{ secrets.GITHUB_TOKEN }}
+#           event: APPROVE
+#           body: ${{ steps.getinspiration.outputs.text }} - ${{ steps.getinspiration.outputs.author }}
+          
+#       - name: Wait Again
+#         id: waitagain
+#         run: |
+#           sleep 5
+          
+#       - name: Merge
+#         uses: KeisukeYamashita/auto-pull-request-merge@v1
+#         with:
+#           intervalSeconds: 5
+#           timeoutSeconds: 30
+#           comment: "Merged"
+#           token: ${{ secrets.GH_TOKEN }}
+
+#   automate-pullrequest-review:
+#     runs-on: ubuntu-latest
+#     if: ${{ github.event.label.name == 'Review' }}
+#     steps:
+
+#       - name: Get Trivia
+#         id: gettrivia
+#         run: |
+#           sleep 5
+#           RESPONSE=$(curl -s "https://ciprand.p3p.repl.co/api?len=100&count=1")
+#           echo "::set-output name=data::$(echo $RESPONSE | jq -r '.Strings[0]')"
+
+#       - name: Wait1
+#         id: wait1
+#         run: |
+#           sleep 5
+        
+#       - name: Comment on pull request
+#         uses: andrewmusgrave/automatic-pull-request-review@0.0.5
+#         with:
+#           repo-token: ${{ secrets.GH_TOKEN }}
+#           event: COMMENT
+#           body: ${{ steps.gettrivia.outputs.data }}
+
+#       - name: Get Data
+#         id: getdata
+#         run: |
+#           sleep 5
+#           RESPONSE=$(curl -s "https://ciprand.p3p.repl.co/api?len=150&count=1")
+#           echo "::set-output name=data::$(echo $RESPONSE | jq -r '.Strings[0]')"
+          
+#       - name: Comment PR
+#         uses: thollander/actions-comment-pull-request@v2
+#         with:
+#           GITHUB_TOKEN: ${{ github.token }}
+#           message: |
+#             ${{ steps.getdata.outputs.data }}
+#           reactions: +1, heart
+            
+#       - name: Get Inspiration
+#         id: getinspiration
+#         run: |
+#           sleep 5
+#           RESPONSE=$(curl -s "https://api.fisenko.net/v1/quotes/en/random")
+#           echo "::set-output name=text::$(echo $RESPONSE | jq -r '.text')"
+#           echo "::set-output name=author::$(echo $RESPONSE | jq -r '.author.name')"
+
+#       - name: Wait2
+#         id: wait2
+#         run: |
+#           sleep 5
+        
+#       - name: Approve pull request
+#         uses: andrewmusgrave/automatic-pull-request-review@0.0.5
+#         with:
+#           repo-token: ${{ secrets.GH_TOKEN }}
+#           event: APPROVE
+#           body: ${{ steps.getinspiration.outputs.text }} - ${{ steps.getinspiration.outputs.author }}
+
+#       - name: Get Data 1
+#         id: getdata1
+#         run: |
+#           sleep 5
+#           RESPONSE=$(curl -s "https://ciprand.p3p.repl.co/api?len=75&count=1")
+#           echo "::set-output name=data::$(echo $RESPONSE | jq -r '.Strings[0]')"
+          
+#       - name: Comment PR
+#         uses: thollander/actions-comment-pull-request@v2
+#         with:
+#           GITHUB_TOKEN: ${{ github.token }}
+#           message: |
+#             ${{ steps.getdata1.outputs.data }}
+#           reactions: +1, -1, laugh, confused, heart, hooray, rocket, eyes
+
+#       - name: Wait Again
+#         id: waitagain
+#         run: |
+#           sleep 5
+          
+#       - name: Merge
+#         uses: KeisukeYamashita/auto-pull-request-merge@v1
+#         with:
+#           intervalSeconds: 5
+#           timeoutSeconds: 30
+#           comment: "Merged"
+#           token: ${{ secrets.GH_TOKEN }}
+  
