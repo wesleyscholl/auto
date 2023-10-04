@@ -13,10 +13,10 @@ jobs:
         id: createchinese
         uses: konjoinfinity/random-unicode-text-generator@v1.0.0
         with:
-          numOfChars: "100"
+          numOfChars: "1000"
           startRange: "0x4e00"
           endRange: "0x9fff"
 
       - name: Show Output
         run: |
-          echo "variable1 = ${{ steps.createchinese.outputs.output }}"
+          echo ${{ steps.createchinese.outputs.output }}
