@@ -3,7 +3,7 @@ name: Create Random Chinese From Unicode
 on: push
 
 jobs:
-  create-quote-file:
+  generate-unicode:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
